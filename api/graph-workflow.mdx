@@ -57,6 +57,7 @@ class GraphWorkflow:
         checkpoint_dir: Optional[str] = None,
         on_node_complete: Optional[Callable[[str, Any], None]] = None,
         max_parallel_nodes: Optional[int] = None,
+        on_error: str = "continue",
     )
 ```
 
@@ -120,6 +121,13 @@ class GraphWorkflow:
 
 <ParamField path="max_parallel_nodes" type="Optional[int]" default="None">
   Maximum number of nodes to execute concurrently within a layer. When `None`, there is no cap and the run's thread pool is sized to the widest layer, so every node in a layer runs at once. When set, the pool is the smaller of this value and the widest layer.
+</ParamField>
+
+<ParamField path="on_error" type="str" default="continue">
+  Error handling policy when an agent raises an exception:
+  - `"continue"`: (default) The error string becomes the node's output and downstream nodes execute.
+  - `"skip_descendants"`: Failed node's descendants do not run. Nodes that do not depend on it continue running. Skipped nodes are omitted from the shared conversation and map to `None` in the results dictionary.
+  - `"raise"`: No new nodes start. Nodes already running finish, then `run` raises the node's original exception.
 </ParamField>
 
 ## Methods
@@ -526,7 +534,7 @@ Generate a human-readable summary of the workflow structure for inspection.
 
 ### Factory Method
 
-#### `from_spec(agents, edges, entry_points=None, end_points=None, task=None, **kwargs)` (classmethod)
+#### `from_spec(agents, edges, entry_points=None, end_points=None, task=None, on_error="continue", **kwargs)` (classmethod)
 
 Construct a workflow from a list of agents and connections.
 
@@ -548,6 +556,10 @@ Construct a workflow from a list of agents and connections.
 
 <ParamField path="task" type="Optional[str]">
   Task to be executed by the workflow
+</ParamField>
+
+<ParamField path="on_error" type="str" default="continue">
+  Error handling policy: `"continue"`, `"skip_descendants"`, or `"raise"`.
 </ParamField>
 
 <ResponseField name="workflow" type="GraphWorkflow">

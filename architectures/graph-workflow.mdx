@@ -236,6 +236,13 @@ workflow = GraphWorkflow.from_spec(
   Caps how many nodes execute concurrently within a layer. When not set, there is no cap: every node in the widest layer runs at once, since nodes are network-bound model calls. Set it to stay under a provider's rate limit.
 </ParamField>
 
+<ParamField path="on_error" type="str" default="continue">
+  Error handling policy when an agent raises an exception:
+  - `"continue"`: (default) The error string becomes the node's output and downstream nodes execute.
+  - `"skip_descendants"`: Failed node's descendants do not run. Nodes that do not depend on it continue running. Skipped nodes are omitted from the shared conversation and map to `None` in the results dictionary.
+  - `"raise"`: No new nodes start. Nodes already running finish, then `run` raises the node's original exception.
+</ParamField>
+
 ## Methods
 
 ### add_node()
